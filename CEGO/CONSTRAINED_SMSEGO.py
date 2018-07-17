@@ -28,11 +28,16 @@ import copy
 import time
 import glob 
 
-def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval=None, maxEval=None, smooth=None, runNo=0, ref=None, nconstraints=0, epsilonInit=0.01, epsilonMax=0.02):
+def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=None, maxEval=None, smooth=None, runNo=0, epsilonInit=0.01, epsilonMax=0.02):
     """
-    S-Metric Selection based Efficient Global Optimization (SMS-EGO) for
-    multi-objective optimization problems
+    based on: 
+        
+    1 Designing Ships using Constrained Multi-Objective Efficient Global Optimization
+    Roy de Winter, Bas van Stein, Matthys Dijkman and Thomas Baeck
+    In the Fourth international conference of machinelearning optimization and data science (2018)
     
+    2 S-Metric Selection based Efficient Global Optimization (SMS-EGO) for
+    multi-objective optimization problems
     Ponweiser, W.; Wagner, T.; Biermann, D.; Vincze, M.: Multiobjective
     Optimization on a Limited Amount of Evaluations Using Model-Assisted
     S-Metric Selection. In: Proc. 10th Int'l Conf. Parallel Problem Solving
@@ -41,47 +46,36 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval=None, maxEval=None,
     in Computer Science, Springer, Berlin, 2008, pp. 784-794.
     ISBN 978-3-540-87699-1. doi: 10.1007/978-3-540-87700-4_78
     
-    using the enhancements proposed in
-    
-    Wagner, T.; Emmerich, M.; Deutz, A.; Ponweiser, W.: On Expected-
+    3 Self-adjusting parameter control for surrogate-assisted constrained 
+    optimization under limited budgets
+    Samineh Bagheri, Wolfgang Konen, Michael Emmerich, Thomas Baeck
+    ELSEVIER Applied Soft Computing 61 (2017) 377-393
+        
+    4 Wagner, T.; Emmerich, M.; Deutz, A.; Ponweiser, W.: On Expected-
     Improvement Criteria for Model-Based Multi-Objective Optimization.
     In: Proc. 11th Int'l. Conf. Parallel Problem Solving From Nature
     (PPSN XI) - Part I, 11..-15. September, Krakau, Polen, Schaefer, R.;
     Cotta, C.; Kolodziej, J.; Rudolph, G. (Eds.). No. 6238 in Lecture Notes
     in Computer Science, Springer, Berlin, 2010, pp. 718-727.
     ISBN 978-3-642-15843-8. doi: 10.1007/978-3-642-15844-5_72
-    
-    additional smoothing for noisy problems was implemented according to
-    
-    Forrester, A.I.J.; Keane, A.J.; Bressloff, N.W.: Design and analysis of
+        
+    5 Forrester, A.I.J.; Keane, A.J.; Bressloff, N.W.: Design and analysis of
     'noisy' computer experiments. In: AIAA Journal, 44 (2006) 10,
     pp. 2331-2339. doi: 10.2514/1.20068
     
-    call: [paretoSet paretoFront models parameters objectives eval] = ...
-       SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, runNo)
-    
-    Output arguments (all optional)
-    paretoSet: Approximation of Pareto optimal factor settings
-    paretoFront: Objective values of the approximated Pareto set
-    model: cell array of the surrogate models of each objective function
-    parameters: all factor settings that have been evaluated during the run
-    objectives: all objective values (corresponding to parameters)
-    eval: number of evaluations of the objective vector
+    call: CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints)
     
     Input arguments
-    problemCall: string or function handle to the objective function (required)
-    rngMin: lower bound of the design space (1 x dim)-vector (required)
-    rngMax: upper bound of the design space (1 x dim)-vector (required)
-    initEval: budget for the initial design (optional, default 11*dim-1)
-    maxEval: maximum budget of objective evaluations (optional, default 100)
-    smooth: type of smoothing using: 0 none, 1 pow.exp.+nugget, 2 gauss+nugget
-    (optional, default 0)
-    runNo: run number for benchmark purposes (optional, default 0)
+    problemCall: function handle to the objective function (required)
+    rngMin: lower bound of the design space (dim)-np array (required)
+    rngMax: upper bound of the design space (dim)-np array (required)
+    ref: the maximum objective values interested in
+    nconstraints: number of constraints
     """
     if problemCall is None or rngMin is None or rngMax is None:
         raise ValueError('SMSEGO requires at least three arguments (func, rngMin, rngMax)')
     if smooth is None:
-        smooth = 0
+        smooth = 2
     nVar = len(rngMin)
     if maxEval is None:
         maxEval = 40*nVar
@@ -175,7 +169,7 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval=None, maxEval=None,
         s=time.time()
         for i in range(nObj):
             if smooth==0:
-                raise ValueError("no smoothing, kringing to be implemented")
+                raise ValueError("no smoothing, to be implemented")
             elif smooth==1:
                 #smoothing usin gpower exponential kernel with nugget
                 model[i] = simplexKriging(copy.deepcopy(parameters[:evall,:]), copy.deepcopy(objectives[:evall,i]))[0]
@@ -189,7 +183,7 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval=None, maxEval=None,
             else:
                 raise ValueError('Unknown smoothing type')   
                 
-        print("time to compute surrogate models  ",time.time()-s)
+        print("Time to compute surrogate models  ",time.time()-s)
         
         print('Optimize infill criterion')
         currentHV = hypervolume(paretoFront, ref)
