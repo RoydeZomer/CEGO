@@ -51,7 +51,7 @@ rngMax = np.array([1,5])
 ref = np.array([1,9])
 
 #and we run the optimization.
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref Nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints)
 
 ```
 
