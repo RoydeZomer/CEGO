@@ -72,8 +72,8 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     ref: the maximum objective values interested in
     nconstraints: number of constraints
     """
-    if problemCall is None or rngMin is None or rngMax is None:
-        raise ValueError('SMSEGO requires at least three arguments (func, rngMin, rngMax)')
+    if problemCall is None or rngMin is None or rngMax is None or ref is None or nconstraints is None:
+        raise ValueError('SMSEGO requires at least five arguments (problemCall, rngMin, rngMax, ref, nconstraints)')
     if smooth is None:
         smooth = 2
     nVar = len(rngMin)
