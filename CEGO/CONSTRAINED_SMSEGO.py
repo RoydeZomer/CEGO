@@ -80,7 +80,7 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     if maxEval is None:
         maxEval = 40*nVar
     if initEval is None:
-        initEval = 11*nVar-1 #recommended, but has to be at least larger then 2*nVar+1
+        initEval = 11*nVar-1 #recommended, but has to be at least larger then n+1
         
     EPS = np.array([epsilonInit]*nconstraints)
     Cfeas = 0
