@@ -72,15 +72,15 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     ref: the maximum objective values interested in
     nconstraints: number of constraints
     """
-    if problemCall is None or rngMin is None or rngMax is None or ref is None or nconstraints is None:
-        raise ValueError('SMSEGO requires at least five arguments (problemCall, rngMin, rngMax, ref, nconstraints)')
+    if problemCall is None or rngMin is None or rngMax is None:
+        raise ValueError('SMSEGO requires at least three arguments (func, rngMin, rngMax)')
     if smooth is None:
         smooth = 2
     nVar = len(rngMin)
     if maxEval is None:
         maxEval = 40*nVar
     if initEval is None:
-        initEval = 11*nVar-1 #recommended, but has to be at least larger then n+1
+        initEval = 11*nVar-1 #recommended, but has to be at least larger then 2*nVar+1
         
     EPS = np.array([epsilonInit]*nconstraints)
     Cfeas = 0
@@ -207,8 +207,12 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
         constraintSurrogates = trainCubicRBF(parameters[:evall,:], constraints[:evall], rngMin, rngMax, hypervolumeProgress[:evall])
 
         X,Z = findAllLocalOptimaNew(copy.deepcopy(model), rngMin, rngMax, criterion, constraintSurrogates, EPS)
-
-        notSeenBefore = ~np.array([x in parameters for x in X])
+        
+        if len(X)>0:
+            notSeenBefore = ~np.array([x in parameters for x in X])
+        else:
+            notSeenBefore = [0]
+            
         if sum(notSeenBefore)>0:
             print('Filter local optimal')
             ind = np.argmax(notSeenBefore)
