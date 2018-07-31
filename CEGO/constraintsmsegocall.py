@@ -40,7 +40,7 @@ nconstraints = 10
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = WB
@@ -57,7 +57,7 @@ nconstraints = 5
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = TBTD
@@ -73,7 +73,7 @@ nconstraints = 3
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = DBD
@@ -90,7 +90,7 @@ nconstraints = 5
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = SPD
@@ -107,7 +107,7 @@ nconstraints=9
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 
@@ -125,7 +125,7 @@ nconstraints = 7
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 ##########################theoreticala problems
@@ -143,7 +143,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = SRN
@@ -159,7 +159,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 problemCall = TNK
@@ -175,7 +175,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 
@@ -192,7 +192,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 
@@ -209,7 +209,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 
@@ -226,7 +226,7 @@ nconstraints = 2
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time()
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 
@@ -243,7 +243,7 @@ nconstraints = 6
 epsilonInit=0.01
 epsilonMax=0.02
 s = time.time() 
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, initEval, maxEval, smooth, runNo, ref, nconstraints)
+CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval, maxEval, smooth, runNo, epsilonInit, epsilonMax)
 print(time.time()-s)
 
 #par = len(rngMin)
