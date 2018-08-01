@@ -68,8 +68,17 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     problemCall: function handle to the objective function (required)
     rngMin: lower bound of the design space (dim)-np array (required)
     rngMax: upper bound of the design space (dim)-np array (required)
-    ref: the maximum objective values interested in
-    nconstraints: number of constraints
+    ref: the maximum objective values interested in (required)
+    nconstraints: the number of constraints returned by the problemCall (requried)
+    
+    Optional input arguments:
+    initEval: number of initial evaluations, default=11*number of variables-1, 
+    maxEval: maximum number of evaluations, default=40*number of variables, 
+    smooth: smoothning function, 1=smoothing with exponential kernel, 2=gaussican kernel, 
+    runNo: run number controlls the seed, 
+    epsilonInit: the "allowed" constrained violation since we are not 100% 
+                    confident about the constrained model, default=0.01, 
+    epsilonMax= the maximum "allowed" constrained violation, default=0.02
     """
     if problemCall is None or rngMin is None or rngMax is None or ref is None or nconstraints is None:
         raise ValueError('SMSEGO requires at least five arguments (problemCall, rngMin, rngMax, ref, nconstraints)')
