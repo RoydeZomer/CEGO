@@ -4,7 +4,6 @@ Created on Tue Oct 10 09:05:48 2017
 
 @author: r.dewinter
 """
-
 from JCS_LHSOptimizer import JCS_LHSOptimizer
 from transformLHS import transformLHS
 from include_previous_pareto import include_previous_pareto
@@ -72,15 +71,15 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     ref: the maximum objective values interested in
     nconstraints: number of constraints
     """
-    if problemCall is None or rngMin is None or rngMax is None:
-        raise ValueError('SMSEGO requires at least three arguments (func, rngMin, rngMax)')
+    if problemCall is None or rngMin is None or rngMax is None or ref is None or nconstraints is None:
+        raise ValueError('SMSEGO requires at least five arguments (problemCall, rngMin, rngMax, ref, nconstraints)')
     if smooth is None:
         smooth = 2
     nVar = len(rngMin)
     if maxEval is None:
         maxEval = 40*nVar
     if initEval is None:
-        initEval = 11*nVar-1 #recommended, but has to be at least larger then 2*nVar+1
+        initEval = 11*nVar-1 #recommended, but has to be at least larger then n+1
         
     EPS = np.array([epsilonInit]*nconstraints)
     Cfeas = 0
@@ -158,7 +157,7 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     paretoSet = parameters[paretoOptimal]
     paretoConstraints = constraints[paretoOptimal,:]
     
-    visualiseParetoFront(paretoFront)
+    visualiseParetoFront(paretoFront,save=False)
     print(paretoFront)
     print(paretoConstraints)
     
@@ -240,7 +239,7 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
         
         paretoFront = objectives[paretoOptimal]
         paretoConstraints = constraints[paretoOptimal]
-        visualiseParetoFront(paretoFront)
+        visualiseParetoFront(paretoFront,save=False)
         print(paretoFront)
 #        print(paretoConstraints)
 
@@ -289,7 +288,16 @@ def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, initEval=
     
     with open(str(outdir)+str(runNo)+'con_model.json', 'w') as fOut:
         json.dump(constraintSurrogates, fOut)
-        
+    
+    return objectives, constraints, parameters
+
+#idx = rank==2
+#data = data[idx]
+#colors = colors[idx]
+#alpha = alpha[idx]
+#
+#parallel_coordinates(data, colors, columNames, alpha)
+
 
 #import matplotlib.pyplot as plt    
 #parameters = np.array([[-1],[0.499],[0.5],[1]])
