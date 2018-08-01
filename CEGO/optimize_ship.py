@@ -4,7 +4,11 @@ Created on Fri Dec  1 11:05:18 2017
 
 @author: r.dewinter
 """
+
+#conda install -c conda-forge pygmo
+
 from CONSTRAINED_SMSEGO import CONSTRAINED_SMSEGO
+
 from paretofrontFeasible import paretofrontFeasible
 
 import numpy as np
@@ -12,6 +16,172 @@ import time
 import pandas as pd
 from functools import partial
 import os
+
+from hypervolume import hypervolume
+from visualiseParetoFront import visualiseParetoFront
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+import mpld3
+
+
+
+def parallel_coordinates(parameters, constraints, objectives, outdir=None, parNames=None):
+    feasible = np.sum(constraints<=0, axis=1)==constraints.shape[1]
+    dominant = paretofrontFeasible(objectives, constraints)
+    rank = feasible+0+dominant+0 #+0 to convert to int
+    
+    objectives = objectives *-1
+    for i in range(objectives.shape[1]):
+        objectives[:,i] = (objectives[:,i] - min(objectives[:,i])) / (max(objectives[:,i]) - min(objectives[:,i]))
+        
+    alpha = np.sum(objectives, axis=1)
+    alpha = alpha/max(alpha)
+    
+    colors = np.empty((len(alpha),3))
+    
+    brightness2 = np.empty(len(alpha))
+    brightness2[:] = 0
+    idx = rank==2
+    brightness2[idx] = np.array(range(sum(idx)))
+    brightness2 = brightness2/2
+    brightness2 = brightness2/sum(idx)
+    colors[idx] = np.array([brightness2, [1]*len(brightness2), brightness2]).T[idx]
+    
+    brightness1 = np.empty(len(alpha))
+    brightness1[:] = 0
+    idx = rank==1
+    brightness1[idx] = np.array(range(sum(idx)))
+    brightness1 = brightness1/2
+    brightness1 = brightness1/sum(idx)
+    colors[idx] = np.array([brightness1, brightness1, [1]*len(brightness1)]).T[idx]
+    
+    brightness0 = np.empty(len(alpha))
+    brightness0[:] = 0
+    idx = rank==0
+    brightness0[idx] = np.array(range(sum(idx)))
+    brightness0 = brightness0/2
+    brightness0 = brightness0/sum(idx)
+    colors[idx] = np.array([[1]*len(brightness0), brightness0, brightness0]).T[idx]
+    
+    data = np.column_stack((rank, parameters))
+    order = data[:,0].argsort()
+    colors = colors[order]
+    data = data[order] #sort on rank
+    rank = data[:,0]
+    data_sets = data[:,1:] #remove rank
+    alpha = alpha[order]
+    
+    if parNames is None or len(parNames)!=parameters.shape[1]:
+        columNames=['parameter'+str(i) for i in range(parameters.shape[1])]
+    else:
+        columNames = parNames
+    
+    dims = len(data_sets[0])
+    x    = range(dims)
+    fig, axes = plt.subplots(1, dims-1, sharey=False)
+
+    if colors is None:
+        colors = ['r-']*len(data_sets)
+    
+    # Calculate the limits on the data
+    min_max_range = list()
+    for m in zip(*data_sets):
+        mn = min(m)
+        mx = max(m)
+        if mn == mx:
+            mn -= 0.5
+            mx = mn + 1.
+        r  = float(mx - mn)
+        min_max_range.append((mn, mx, r))
+
+    # Normalize the data sets
+    norm_data_sets = list()
+    for ds in data_sets:
+        nds = []
+        for dimension, value in enumerate(ds):
+            v = (value - min_max_range[dimension][0]) / min_max_range[dimension][2]
+            nds.append(v)
+        norm_data_sets.append(nds)
+        
+    data_sets = norm_data_sets
+
+    # Plot the datasets on all the subplots
+    for i, ax in enumerate(axes):
+        for dsi, d in enumerate(data_sets):
+            ax.plot(x, d, c=colors[dsi], alpha=alpha[dsi])
+        ax.set_xlim([x[i], x[i+1]])
+        
+    # Set the x axis ticks 
+    for dimension, (axx,xx) in enumerate(zip(axes, x[:-1])):
+        axx.xaxis.set_major_locator(ticker.FixedLocator([xx]))
+        ticks = len(axx.get_yticklabels())
+        labels = list()
+        step = min_max_range[dimension][2] / (ticks - 3)
+        mn   = min_max_range[dimension][0]
+        for i in range(-1,ticks):
+            v = mn + i*step
+            labels.append('%6.2f' % v) 
+        axx.set_yticklabels(labels)
+
+
+    # Move the final axis' ticks to the right-hand side
+    axx = plt.twinx(axes[-1])
+    dimension += 1
+    axx.xaxis.set_major_locator(ticker.FixedLocator([x[-2], x[-1]]))
+    ticks = len(axx.get_yticklabels())
+    step = min_max_range[dimension][2] / (ticks - 1)
+    mn   = min_max_range[dimension][0]
+    labels = ['%6.2f' % (mn + i*step) for i in range(ticks)]
+    axx.set_yticklabels(labels)      
+    
+    i=0
+    for col in columNames[:-2]:
+        plt.sca(axes[i])
+        plt.xticks([i], (col,), rotation = 'vertical')
+        i+=1
+    plt.sca(axes[i])
+    plt.xticks([i,i+1], columNames[i:],  rotation = 'vertical')
+    
+    #color labels
+    plt.plot([],[],color='r',label='Infeasible')
+    plt.plot([],[],color='b',label='Feasible')
+    plt.plot([],[],color='g',label='Non-dominated')
+    
+    #delete whitespace
+    plt.subplots_adjust(wspace=0)
+    
+    #title
+    plt.suptitle('Parallel Coordinate Plot')
+    
+    plt.legend(bbox_to_anchor=(1.6, 1), loc=2, borderaxespad=0.)
+    plt.show()
+    if outdir is not None: 
+        fig.savefig(str(outdir)+"paralelcoordinate1.pdf",dpi=600,bbox_inches='tight')
+    else:
+        fig.savefig("paralelcoordinate1.pdf",dpi=600,bbox_inches='tight')
+
+def convergence_plot(objectives, constraints, ref, outdir=None):
+    paretoOptimal = np.empty(len(objectives), dtype=bool)
+    paretoOptimal[:] = False
+    progress_hypervolume = np.empty(len(objectives))
+    progress_hypervolume[:] = 0
+    
+    for i in range(len(progress_hypervolume)):
+        paretoOptimal[:i] = paretofrontFeasible(objectives[:i,:],constraints[:i,:])
+        paretoFront = objectives[paretoOptimal]
+        currentHV = hypervolume(paretoFront, ref)
+        progress_hypervolume[i] = currentHV
+        
+    plt.title('Convergence Plot')
+    plt.xlabel('Iteration')
+    plt.ylabel('(Hyper) Volume')
+    plt.plot(range(len(progress_hypervolume)),progress_hypervolume)
+    if outdir is not None:
+        plt.savefig(str(outdir)+'ConvergencePlot.pdf',dpi=600)
+    else:
+        plt.savefig('ConvergencePlot.pdf',dpi=600)
 
 
 def compute_ship(x, nparameters, nconstraints, nobjectives, conValues, conMultiplier, objMultiplier):
@@ -53,15 +223,13 @@ def compute_ship(x, nparameters, nconstraints, nobjectives, conValues, conMultip
     
     print(objectiveValues)
     print(constraintValues)
-    
-#    CONSTRAINED_SMSEGO_ORDER = np.append( objectiveValues, constraintValues[:4]*-1+1)
-#    CONSTRAINED_SMSEGO_ORDER = np.append(CONSTRAINED_SMSEGO_ORDER, -1*constraintValues[4:])
+
     CONSTRAINED_SMSEGO_ORDER = np.append(objectiveValues, constraintValues)
     CONSTRAINED_SMSEGO_ORDER = CONSTRAINED_SMSEGO_ORDER.astype(float)
     
     print(CONSTRAINED_SMSEGO_ORDER)
     
-    return(objectiveValues, CONSTRAINED_SMSEGO_ORDER[2:])
+    return(objectiveValues, CONSTRAINED_SMSEGO_ORDER[len(objectiveValues):])
 
 #set cego parameters lowerlimit, upperlimit, number of constraints and reference point
 file_old = 'V:/temp/INITIAL_NAPA_RESULTS.csv'
@@ -125,6 +293,7 @@ initEval = int(df_settings['VALUE']['INITEVAL'])
 maxEval = int(df_settings['VALUE']['LOOPS'])
 smooth = int(df_settings['VALUE']['SMOOTH'])
 runNo = int(df_settings['VALUE']['SEED'])
+tabReset = int(df_settings['VALUE']['TABRESET'])
 #ref = np.array([301,72])
 
 if initEval == 0:
@@ -141,20 +310,35 @@ if runNo == 0 :
 
 
 ###### read first or more previous results
-previousResults = np.genfromtxt('V:/temp/INITIAL_NAPA_RESULTS.csv', delimiter=',', skip_header=True)
-previousResults = np.asmatrix(previousResults)
-
-parameters = previousResults[:,3:3+nParameters]
-#constraints = previousResults[:,3+nParameters:3+nParameters+nConstraints]
-#constraints[:,:4] = constraints[:,:4]*-1+1
-#constraints[:,4:] = -1*constraints[:,4:]
-#objectives = previousResults[:,3+nParameters+nConstraints:previousResults.shape[1]-1]
-
-constraints = conMultiplier*np.array(previousResults[:,3+nParameters:3+nParameters+nConstraints] - conValues)
-objectives = objMultiplier*np.array(previousResults[:,3+nParameters+nConstraints:previousResults.shape[1]-1])
-
 functionName = str(problemCall).split(' ')[1]
 outdir = 'results/'+str(functionName)+'/'
+
+par_file_path = str(outdir)+'/par_run'+str(runNo)+'.csv'
+con_file_path = str(outdir)+'/con_run'+str(runNo)+'.csv'
+obj_file_path = str(outdir)+'/obj_run'+str(runNo)+'.csv'
+
+if os.path.exists(par_file_path) and os.path.exists(con_file_path) and os.path.exists(obj_file_path) and (tabReset==0 or tabReset==2):
+    parameters = np.genfromtxt(par_file_path, delimiter=',')
+    constraints = np.genfromtxt(con_file_path, delimiter=',')
+    objectives = np.genfromtxt(obj_file_path, delimiter=',')
+    
+    if tabReset==2:
+        pf = paretofrontFeasible(objectives, constraints)
+        parameters = parameters[pf]
+        constraints = constraints[pf]
+        objectives = objectives[pf]
+    
+    maxEval = max(initEval+len(parameters), maxEval)
+    initEval = max(initEval, len(parameters)+6)
+    
+else:
+    previousResults = np.genfromtxt('V:/temp/INITIAL_NAPA_RESULTS.csv', delimiter=',', skip_header=True)
+    previousResults = np.asmatrix(previousResults)
+    
+    parameters = previousResults[:,3:3+nParameters]
+    
+    constraints = conMultiplier*np.array(previousResults[:,3+nParameters:3+nParameters+nConstraints] - conValues)
+    objectives = objMultiplier*np.array(previousResults[:,3+nParameters+nConstraints:previousResults.shape[1]-1])
 
 if not os.path.isdir(outdir):
     os.makedirs(outdir)
@@ -163,30 +347,27 @@ fileParameters = str(outdir)+'par_run'+str(runNo)+'_finalPF.csv'
 fileObjectives = str(outdir)+'obj_run'+str(runNo)+'_finalPF.csv'
 fileConstraints = str(outdir)+'con_run'+str(runNo)+'_finalPF.csv'
 
-#paretoOptimal = paretofrontFeasible(objectives,constraints)
-paretoOptimal = [True]*len(objectives)
-paretoFront = objectives[paretoOptimal]
-paretoSet = parameters[paretoOptimal]
-paretoConstraints = constraints[paretoOptimal]
-
-np.savetxt(fileParameters, paretoSet, delimiter=',')
-np.savetxt(fileObjectives, paretoFront, delimiter=',')
-np.savetxt(fileConstraints, paretoConstraints, delimiter=',')
-
+np.savetxt(fileParameters, parameters, delimiter=',')
+np.savetxt(fileObjectives, objectives, delimiter=',')
+np.savetxt(fileConstraints, constraints, delimiter=',')
 
 s = time.time()
-CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nConstraints, initEval, maxEval, smooth, runNo)
+objectives, constraints, parameters = CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nConstraints, initEval, maxEval, smooth, runNo)
 print(time.time()-s)
 
-#7uur 55 minuten 35 seconden
 
-#pf = np.array([[  2.54336000e+03   ,8.47891000e-01],
-# [  2.49148000e+03,   8.52148000e-01],
-# [  2.76051000e+03 ,  8.44227000e-01],
-# [  2.29118000e+03  , 8.53175000e-01],
-# [  1.72588000e+03   ,1.20782000e+00],
-# [  1.92200000e+03,   8.58907000e-01],
-# [  2.85871000e+03 ,  8.05092000e-01],
-# [  2.06695000e+03  , 8.53343000e-01],
-# [  1.74834000e+03   ,8.76522000e-01],
-# [  1.79203000e+03   ,8.70181000e-01]])
+
+paretoOptimal = paretofrontFeasible(objectives,constraints)
+paretoFront = objectives[paretoOptimal]
+
+## save pareto frontier
+objNames = list(df_objectives.index.values)
+visualiseParetoFront(paretoFront, save=True, outdir=str(outdir), objNames=objNames)
+
+## create convergence plot
+convergence_plot(objectives, constraints, ref, outdir=str(outdir))
+
+## create parallel coordinate plot
+parNames = list(df_parameters.index.values)
+parallel_coordinates(parameters, constraints, objectives, outdir=str(outdir), parNames=parNames)
+
