@@ -11,7 +11,7 @@ Winter, et al. *Designing Ships using Constrained Multi-Objective Efficient Glob
 
 To use the optimization algorithm you need to define an objective function, the constraint function, and the search space before you can start the optimizer. Below is an examples that describe most of the functionality.
 
-### Example - Optimizing OSKU problem
+### Example - Optimizing CEXP problem
 
 ```python
 import numpy as np
