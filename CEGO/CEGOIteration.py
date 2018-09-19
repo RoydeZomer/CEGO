@@ -23,6 +23,7 @@ import json
 import copy
 import time
 
+# use this if you want to execute only one iterations
 def CEGOIteration(problemCall, rngMin, rngMax, ref, nconstraints, maxEval=None, smooth=2, runNo=0, epsilonInit=0.01, epsilonMax=0.02, data=None):
     """
     based on: 
@@ -66,9 +67,10 @@ def CEGOIteration(problemCall, rngMin, rngMax, ref, nconstraints, maxEval=None, 
     rngMax: upper bound of the design space (dim)-np array (required)
     ref: the maximum objective values interested in (required)
     nconstraints: the number of constraints returned by the problemCall (requried)
-    
+    data: the data provided to learn the kriging and crbf models. 
+            data = np.column_stack(parameters, constraints, objectives)
+            
     Optional input arguments:
-    initEval: number of initial evaluations, default=11*number of variables-1, 
     maxEval: maximum number of evaluations, default=40*number of variables, 
     smooth: smoothning function, 1=smoothing with exponential kernel, 2=gaussican kernel, 
     runNo: run number controlls the seed, 
