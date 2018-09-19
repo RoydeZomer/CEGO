@@ -23,7 +23,7 @@ import json
 import copy
 import time
 
-def CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints, maxEval=None, smooth=2, runNo=0, epsilonInit=0.01, epsilonMax=0.02, data=None):
+def CEGOIteration(problemCall, rngMin, rngMax, ref, nconstraints, maxEval=None, smooth=2, runNo=0, epsilonInit=0.01, epsilonMax=0.02, data=None):
     """
     based on: 
         
