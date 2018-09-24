@@ -4,8 +4,8 @@
 
 The advantage of CEGO is that it uses a surrogate models for both the constraints and the objectives to learn from the evaluations it has made so far. For the constraints Cubic Radial Basis Functions are used and for the objectives we use Gaussian Process Regression in combination with the S-Metric Selection criterion. 
 
-For example, one use case would be to optimize expensive objectives that need to be computed with simulations. See the following paper and master thesis for more detail about this algorithm:  
-Winter, et al. *Designing Ships using Constrained Multi-Objective Efficient Global Optimization.* (yet to be published)
+For example, one use case would be to optimize expensive objectives that need to be computed with simulations. See the following paper (yet to be published) and master thesis for more detail about this algorithm:  
+Winter, et al. *Designing Ships using Constrained Multi-Objective Efficient Global Optimization.* https://theses.liacs.nl/pdf/2017-2018-WinterRoyde.pdf
 
 ## Usage
 
