@@ -7,6 +7,10 @@ The advantage of CEGO is that it uses a surrogate models for both the constraint
 For example, one use case would be to optimize expensive objectives that need to be computed with simulations. See the following paper (yet to be published) and master thesis for more detail about this algorithm:  
 Winter, et al. *Designing Ships using Constrained Multi-Objective Efficient Global Optimization.* https://dx.doi.org/10.13140/RG.2.2.21395.12328
 
+## Pseudo code:
+
+![alt text](https://github.com/RoydeZomer/CEGO/pseudocode.png)
+
 ## Usage
 
 To use the optimization algorithm you need to define an objective function, the constraint function, and the search space before you can start the optimizer. Below is an examples that describe most of the functionality.
