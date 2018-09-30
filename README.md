@@ -9,7 +9,7 @@ Winter, et al. *Designing Ships using Constrained Multi-Objective Efficient Glob
 
 ## Pseudo code:
 
-![alt text](https://github.com/RoydeZomer/CEGO/pseudocode.PNG)
+![alt text](https://github.com/RoydeZomer/CEGO/blob/master/pseudocode.PNG)
 
 ## Usage
 
