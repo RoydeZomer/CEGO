@@ -54,7 +54,7 @@ rngMax = np.array([1,5])
 #the objective space boundary is simply the largest values of the objective function we are interested in.
 ref = np.array([1,9])
 
-#and we run the optimization.
+#and we run the optimization. Use CEGOparallel for faster computations
 obj, constr, param = CONSTRAINED_SMSEGO(problemCall, rngMin, rngMax, ref, nconstraints)
 
 ```
