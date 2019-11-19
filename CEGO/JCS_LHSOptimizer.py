@@ -7,7 +7,7 @@ Created on Tue Oct 10 10:57:13 2017
 import numpy as np
 from evaluateEntropy import evaluateEntropy
 from lhs import lhs
-
+import copy
 
 
 def JCS_LHSOptimizer(n, m, no_eval=None, theta=None, levels=None):
@@ -25,6 +25,7 @@ def JCS_LHSOptimizer(n, m, no_eval=None, theta=None, levels=None):
     Input arguments
     n: number of designs in the output LHS (necessary)
     m: number of dimensions per design (necessary)
+    doPlot: show plots (optional, 1 do 0 don't, default 0)
     no_eval: maximum number of trials for determining the LHS (optional)
     theta: weights and exponents of the correlation function (optional)
     levels: number of factor levels (optional, default n)
@@ -34,25 +35,16 @@ def JCS_LHSOptimizer(n, m, no_eval=None, theta=None, levels=None):
         eps = np.finfo(float).eps
         theta = np.array([-np.log(eps)/(m*np.power(d,2))]*m)
         if no_eval is None:
-            no_eval = min(10^(m+3), 1e6)
+            no_eval = min(10**(m+3), 1e6)
     elif (len(theta) != m) and (len(theta) != 2*m) and (len(theta) != 2*m+1):
         raise ValueError('theta has to be of length m, 2m or 2m+1')
     
     LHS = lhs(m, samples=n, criterion="center", iterations=5)
-
-    if levels is not None:
-        if len(levels) == 1:
-            levels = m*list(levels)
-        elif len(levels) != m:
-            raise ValueError('levels has to be of length m or 1')
-        levelsMMatrix = np.array([list(levels)]*n)
-        levelsDMatrix = np.array([list(levels -1)]*n)
-        LHS = ((LHS*levelsMMatrix).astype(int))/levelsDMatrix
     
     fBest = evaluateEntropy(LHS, theta)
     bestLHS = LHS
     fCur = fBest
-    curLHS = bestLHS
+    curLHS = copy.deepcopy(bestLHS)
     Th = 0.005 * fBest #initial threshold
     allperm = [[x,x2] for x in range(n) for x2 in range(x,n) if x != x2]
     allperm = np.array(allperm)
@@ -78,14 +70,14 @@ def JCS_LHSOptimizer(n, m, no_eval=None, theta=None, levels=None):
             index = np.random.permutation(ne)
             ii = ((i-1)%m)
             #inner step2 choose the best element exchange
-            LHS = curLHS
+            LHS = copy.deepcopy(curLHS)
             temp = LHS[ allperm[index[0],0] , ii]
             LHS[allperm[index[0],0],ii] = LHS[allperm[index[0],1],ii]
             LHS[allperm[index[0],1],ii] = temp
             fTry = evaluateEntropy(LHS, theta)
-            tryLHS = LHS
+            tryLHS = copy.deepcopy(LHS)
             for x in range(1,J):
-                LHS = curLHS
+                LHS = copy.deepcopy(curLHS)
                 temp = LHS[allperm[index[x],0],ii]
                 LHS[allperm[index[x],0],ii] = LHS[allperm[index[x],1],ii]
                 LHS[allperm[index[x],1],ii] = temp
@@ -93,14 +85,14 @@ def JCS_LHSOptimizer(n, m, no_eval=None, theta=None, levels=None):
                 temp = evaluateEntropy(LHS, theta)
                 if temp < fTry:
                     fTry = temp
-                    tryLHS = LHS
+                    tryLHS = copy.deepcopy(LHS)
             #inner step3 compare to curLHS and bestLHS
             if fTry - fCur < Th*np.random.rand():
-                curLHS = tryLHS
+                curLHS = copy.deepcopy(tryLHS)
                 fCur = fTry
                 nAcpt = nAcpt + 1
                 if fTry < fBest:
-                    bestLHS = tryLHS
+                    bestLHS = copy.deepcopy(tryLHS)
                     fBest = fTry
                     nImp = nImp + 1
         #outer step3 determine current kind of process and update Th
