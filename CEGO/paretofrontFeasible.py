@@ -17,7 +17,7 @@ def paretofrontFeasible(costs, constraints):
     """
     
     n_constraints = constraints.shape[1]
-    feasible = sum(constraints <= 0, axis = 1) == n_constraints
+    feasible = np.sum(constraints <= 0, axis = 1) == n_constraints
     
     indexes = np.arange(len(feasible))
     findexes = indexes[feasible]
